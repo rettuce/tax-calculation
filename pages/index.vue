@@ -24,7 +24,6 @@ provide('scenario', scenario)
           <InputProfileSettings />
           <InputOptimizerGoal />
           <InputCompensationSlider />
-          <InputBonusInput />
           <InputDeductionSelector />
         </div>
 
