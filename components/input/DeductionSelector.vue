@@ -159,14 +159,14 @@ const showOther = ref(false)
           <!-- 配偶者控除 -->
           <div class="flex items-center justify-between">
             <Label class="text-xs">配偶者控除 (38万円)</Label>
-            <Switch :checked="hasSpouse" @update:checked="hasSpouse = $event" />
+            <Switch v-model="hasSpouse" />
           </div>
 
           <!-- 小規模企業共済 -->
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <Label class="text-xs">小規模企業共済</Label>
-              <Switch :checked="hasSmallBusiness" @update:checked="hasSmallBusiness = $event" />
+              <Switch v-model="hasSmallBusiness" />
             </div>
             <div v-show="hasSmallBusiness" class="flex items-center gap-2 pl-3">
               <Input
@@ -184,7 +184,7 @@ const showOther = ref(false)
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <Label class="text-xs">iDeCo</Label>
-              <Switch :checked="hasIdeco" @update:checked="hasIdeco = $event" />
+              <Switch v-model="hasIdeco" />
             </div>
             <div v-show="hasIdeco" class="flex items-center gap-2 pl-3">
               <Input
@@ -217,7 +217,7 @@ const showOther = ref(false)
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <Label class="text-xs">生命保険料控除</Label>
-              <Switch :checked="hasLifeInsurance" @update:checked="hasLifeInsurance = $event" />
+              <Switch v-model="hasLifeInsurance" />
             </div>
             <div v-show="hasLifeInsurance" class="flex items-center gap-2 pl-3">
               <Input
@@ -234,7 +234,7 @@ const showOther = ref(false)
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <Label class="text-xs">医療費控除</Label>
-              <Switch :checked="hasMedical" @update:checked="hasMedical = $event" />
+              <Switch v-model="hasMedical" />
             </div>
             <div v-show="hasMedical" class="flex items-center gap-2 pl-3">
               <Input
