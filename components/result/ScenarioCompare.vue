@@ -46,6 +46,15 @@ function handleLoad(s: Scenario) {
   engine.bonusCount.value = s.params.bonusCount
   engine.age.value = s.params.age
   engine.prefecture.value = s.params.prefecture
+  if (s.params.deductions) {
+    engine.deductionSettings.value = s.params.deductions as typeof engine.deductionSettings.value
+  }
+}
+
+function confirmDeleteAll() {
+  if (window.confirm('全シナリオを削除しますか？この操作は取り消せません。')) {
+    scenario.deleteAllScenarios()
+  }
 }
 </script>
 
@@ -130,7 +139,7 @@ function handleLoad(s: Scenario) {
         variant="ghost"
         size="sm"
         class="w-full text-xs text-muted-foreground"
-        @click="scenario.deleteAllScenarios()"
+        @click="confirmDeleteAll"
       >
         全シナリオ削除
       </Button>

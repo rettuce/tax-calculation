@@ -73,7 +73,16 @@ function levelClass(level: string) {
       class="h-6 px-2 text-xs text-muted-foreground"
       @click="showAll = true"
     >
-      他{{ hiddenCount }}件
+      他{{ hiddenCount }}件を表示
+    </Button>
+    <Button
+      v-if="showAll && warnings.length > MAX_VISIBLE"
+      variant="ghost"
+      size="sm"
+      class="h-6 px-2 text-xs text-muted-foreground"
+      @click="showAll = false"
+    >
+      折りたたむ
     </Button>
   </div>
 </template>

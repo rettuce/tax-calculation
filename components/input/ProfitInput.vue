@@ -12,10 +12,13 @@ import {
 
 const engine = inject<ReturnType<typeof useTaxEngine>>('taxEngine')!
 
+const MAX_PROFIT_IN_MAN = 100_000 // 10億円
+
 const profitInMan = computed({
   get: () => Math.round(engine.totalProfit.value / 10_000),
   set: (v: number) => {
-    engine.totalProfit.value = Math.max(0, v) * 10_000
+    const safeValue = Number.isFinite(v) ? v : 0
+    engine.totalProfit.value = Math.min(Math.max(0, safeValue), MAX_PROFIT_IN_MAN) * 10_000
   },
 })
 </script>

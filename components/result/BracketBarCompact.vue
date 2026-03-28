@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue'
+import { computed, inject } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import {
   Accordion,
@@ -24,66 +24,82 @@ interface BracketSegment {
   rate: number
   min: number
   max: number
+  displayMax: number
   width: number
   color: string
+  description: string
 }
 
 const INCOME_COLORS = [
-  'bg-emerald-500',
-  'bg-teal-500',
-  'bg-cyan-500',
-  'bg-blue-500',
-  'bg-indigo-500',
-  'bg-violet-500',
-  'bg-purple-500',
+  'bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-blue-500',
+  'bg-indigo-500', 'bg-violet-500', 'bg-purple-500',
+]
+const INCOME_DESCRIPTIONS = [
+  '195万円以下: 最低税率。控除額なし',
+  '195万超〜330万: 給与所得控除後に多くの人がここ',
+  '330万超〜695万: 中間層の税率',
+  '695万超〜900万: ここを超えると負担感が増す',
+  '900万超〜1,800万: 高額報酬の税率',
+  '1,800万超〜4,000万: 超高額報酬',
+  '4,000万超: 最高税率',
 ]
 
-const CORPORATE_COLORS = [
-  'bg-emerald-500',
-  'bg-teal-500',
+const CORPORATE_COLORS = ['bg-emerald-500', 'bg-teal-500']
+const CORPORATE_DESCRIPTIONS = [
+  '800万円以下: 中小法人の軽減税率15%',
+  '800万円超: 通常税率23.2%',
 ]
 
 const currentValue = computed(() => {
-  if (props.type === 'income') {
-    return engine.result.value.incomeTaxableIncome
-  }
+  if (props.type === 'income') return engine.result.value.incomeTaxableIncome
   return Math.max(0, engine.result.value.corporateIncome)
 })
 
 const brackets = computed<BracketSegment[]>(() => {
   if (props.type === 'income') {
     const maxDisplay = 50_000_000
-    return taxRates2025.incomeTaxBrackets.map((b, i) => ({
-      label: `${(b.rate * 100).toFixed(0)}%`,
-      rate: b.rate,
-      min: b.min,
-      max: Math.min(b.max, maxDisplay),
-      width: (Math.min(b.max, maxDisplay) - b.min) / maxDisplay * 100,
-      color: INCOME_COLORS[i] ?? INCOME_COLORS[INCOME_COLORS.length - 1],
-    }))
+    return taxRates2025.incomeTaxBrackets.map((b, i) => {
+      const displayMax = Math.min(b.max, maxDisplay)
+      return {
+        label: `${(b.rate * 100).toFixed(0)}%`,
+        rate: b.rate,
+        min: b.min === 1_000 ? 0 : b.min, // 最低ブラケットは0から表示
+        max: b.max,
+        displayMax,
+        width: (displayMax - (b.min === 1_000 ? 0 : b.min)) / maxDisplay * 100,
+        color: INCOME_COLORS[i] ?? INCOME_COLORS[INCOME_COLORS.length - 1],
+        description: INCOME_DESCRIPTIONS[i] ?? '',
+      }
+    })
   }
 
-  // Corporate
   const maxDisplay = 20_000_000
-  return corporateTax2025.corporateTaxBrackets.map((b, i) => ({
-    label: `${(b.rate * 100).toFixed(1)}%`,
-    rate: b.rate,
-    min: i === 0 ? 0 : corporateTax2025.corporateTaxBrackets[i - 1].maxIncome,
-    max: Math.min(b.maxIncome, maxDisplay),
-    width: (Math.min(b.maxIncome, maxDisplay) - (i === 0 ? 0 : corporateTax2025.corporateTaxBrackets[i - 1].maxIncome)) / maxDisplay * 100,
-    color: CORPORATE_COLORS[i] ?? CORPORATE_COLORS[CORPORATE_COLORS.length - 1],
-  }))
+  return corporateTax2025.corporateTaxBrackets.map((b, i) => {
+    const min = i === 0 ? 0 : corporateTax2025.corporateTaxBrackets[i - 1].maxIncome
+    const displayMax = Math.min(b.maxIncome, maxDisplay)
+    return {
+      label: `${(b.rate * 100).toFixed(1)}%`,
+      rate: b.rate,
+      min,
+      max: b.maxIncome,
+      displayMax,
+      width: (displayMax - min) / maxDisplay * 100,
+      color: CORPORATE_COLORS[i] ?? CORPORATE_COLORS[CORPORATE_COLORS.length - 1],
+      description: CORPORATE_DESCRIPTIONS[i] ?? '',
+    }
+  })
 })
 
 const currentBracket = computed(() => {
   const val = currentValue.value
-  return brackets.value.find((b) => val >= b.min && val <= b.max)
+  if (val <= 0) return brackets.value[0] // 0円は最低ブラケット
+  return brackets.value.find((b) => val >= b.min && val <= b.max) ?? brackets.value[0]
 })
 
 const positionPercent = computed(() => {
   const val = currentValue.value
   const maxDisplay = props.type === 'income' ? 50_000_000 : 20_000_000
-  return Math.min(100, (val / maxDisplay) * 100)
+  return Math.min(100, Math.max(0, (val / maxDisplay) * 100))
 })
 
 const nextBracketInfo = computed(() => {
@@ -94,6 +110,8 @@ const nextBracketInfo = computed(() => {
   const idx = brackets.value.indexOf(current)
   if (idx < brackets.value.length - 1) {
     const remaining = current.max - val
+    // max が Infinity の場合は表示しない
+    if (!isFinite(remaining) || remaining < 0) return null
     const nextRate = brackets.value[idx + 1].rate
     return {
       remaining,
@@ -110,15 +128,15 @@ const nextBracketInfo = computed(() => {
       <CardTitle class="text-sm font-medium">{{ title }}</CardTitle>
     </CardHeader>
     <CardContent class="space-y-3">
-      <!-- Bracket bar with position marker -->
+      <!-- Bracket bar -->
       <div class="relative">
         <div class="flex h-4 w-full overflow-hidden rounded-full bg-muted">
           <div
             v-for="b in brackets"
-            :key="b.label"
+            :key="b.label + b.min"
             :class="b.color"
             :style="{ width: `${b.width}%` }"
-            :title="`${b.label}: ${fmt.format(b.min)}~${fmt.format(b.max)}円`"
+            :title="`${b.label}: ${fmt.format(b.min)}〜${isFinite(b.max) ? fmt.format(b.max) + '円' : ''}`"
             class="relative transition-all"
           >
             <span
@@ -132,40 +150,52 @@ const nextBracketInfo = computed(() => {
 
         <!-- Position marker -->
         <div
+          v-if="currentValue > 0"
           class="absolute top-0 h-4 w-0.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)] transition-all duration-300"
           :style="{ left: `${positionPercent}%` }"
         />
       </div>
 
-      <!-- Current bracket info -->
+      <!-- Current info -->
       <div class="text-xs text-muted-foreground">
-        <span v-if="currentBracket">
-          現在: <span class="font-medium text-foreground">{{ currentBracket.label }}</span>ブラケット
-        </span>
-        <span v-if="nextBracketInfo" class="ml-2">
-          / 次({{ nextBracketInfo.nextRate }})まで:
-          <span class="font-mono text-foreground">{{ fmt.format(nextBracketInfo.remaining) }}円</span>
-        </span>
+        <template v-if="currentValue > 0">
+          現在: <span class="font-medium text-foreground">{{ currentBracket?.label }}</span>ブラケット
+          <span class="font-mono">(課税所得 ¥{{ fmt.format(currentValue) }})</span>
+          <template v-if="nextBracketInfo">
+            <br />
+            次の{{ nextBracketInfo.nextRate }}まで:
+            <span class="font-mono text-foreground">あと¥{{ fmt.format(nextBracketInfo.remaining) }}</span>
+          </template>
+        </template>
+        <template v-else>
+          課税所得: ¥0
+        </template>
       </div>
 
-      <!-- Expandable detail -->
+      <!-- Detail accordion -->
       <Accordion type="single" collapsible class="w-full">
         <AccordionItem value="detail" class="border-none">
           <AccordionTrigger class="py-1 text-[10px] text-muted-foreground">
             詳細を見る
           </AccordionTrigger>
           <AccordionContent>
-            <div class="space-y-1.5 pt-1">
+            <div class="space-y-2 pt-1">
               <div
                 v-for="b in brackets"
-                :key="b.label"
-                class="flex items-center gap-2"
+                :key="b.label + b.min"
+                :class="[
+                  'flex items-start gap-2 rounded-md p-1.5 text-[10px]',
+                  currentBracket === b ? 'bg-muted' : '',
+                ]"
               >
-                <span :class="b.color" class="inline-block h-3 rounded-sm" :style="{ width: `${Math.max(b.width, 5)}%` }" />
-                <span class="flex-1 text-[10px] text-muted-foreground">
-                  {{ b.label }}
-                  ({{ fmt.format(b.min) }}~{{ b.max >= 50_000_000 ? '...' : fmt.format(b.max) }}円)
-                </span>
+                <span :class="b.color" class="mt-0.5 inline-block size-3 shrink-0 rounded-sm" />
+                <div>
+                  <span class="font-medium text-foreground">{{ b.label }}</span>
+                  <span class="text-muted-foreground">
+                    ({{ fmt.format(b.min) }}〜{{ isFinite(b.max) ? fmt.format(b.max) + '円' : '' }})
+                  </span>
+                  <p class="text-muted-foreground">{{ b.description }}</p>
+                </div>
               </div>
             </div>
           </AccordionContent>

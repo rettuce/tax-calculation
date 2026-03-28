@@ -39,23 +39,31 @@ const segments = computed(() => {
     </CardHeader>
     <CardContent class="space-y-3">
       <!-- Stacked bar -->
-      <div class="flex h-6 w-full overflow-hidden rounded-full bg-muted">
+      <div class="relative pt-8">
+        <!-- Tooltip layer (outside overflow-hidden) -->
         <div
           v-for="(seg, idx) in segments"
-          :key="seg.label"
-          :class="seg.color"
-          :style="{ width: `${seg.percent}%` }"
-          class="relative cursor-pointer transition-all duration-300 hover:brightness-125"
-          @mouseenter="hoveredIndex = idx"
-          @mouseleave="hoveredIndex = null"
+          :key="`tooltip-${seg.label}`"
+          class="pointer-events-none"
         >
-          <!-- Hover tooltip -->
           <div
             v-if="hoveredIndex === idx"
-            class="absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded bg-popover px-2 py-0.5 text-[10px] text-popover-foreground shadow"
+            class="absolute top-0 z-20 -translate-x-1/2 whitespace-nowrap rounded bg-popover px-2 py-0.5 text-[10px] text-popover-foreground shadow"
+            :style="{ left: `${segments.slice(0, idx).reduce((s, t) => s + t.percent, 0) + seg.percent / 2}%` }"
           >
             {{ seg.label }}: {{ fmt.format(seg.amount) }}円
           </div>
+        </div>
+        <div class="flex h-6 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            v-for="(seg, idx) in segments"
+            :key="seg.label"
+            :class="seg.color"
+            :style="{ width: `${seg.percent}%` }"
+            class="cursor-pointer transition-all duration-300 hover:brightness-125"
+            @mouseenter="hoveredIndex = idx"
+            @mouseleave="hoveredIndex = null"
+          />
         </div>
       </div>
 

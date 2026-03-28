@@ -12,14 +12,25 @@ const corporateRetained = computed(() => engine.result.value.corporateRetained)
 const effectiveRate = computed(
   () => (engine.result.value.effectiveTaxRate * 100).toFixed(1),
 )
+const isDeficit = computed(() => totalNet.value < 0)
 </script>
 
 <template>
-  <Card class="overflow-hidden border-cyan-500/20 bg-gradient-to-br from-card to-card/80">
+  <Card
+    :class="[
+      'overflow-hidden border-cyan-500/20',
+      isDeficit ? 'bg-red-950/50 border-red-500/30' : 'bg-card',
+    ]"
+  >
     <CardContent class="p-6">
       <p class="text-xs text-muted-foreground">トータル手残り</p>
-      <p class="mt-1 text-3xl font-bold tracking-tight text-cyan-400">
-        {{ fmt.format(totalNet) }}<span class="text-lg">円</span>
+      <p
+        :class="[
+          'mt-1 text-3xl font-bold tracking-tight',
+          isDeficit ? 'text-red-400' : 'text-cyan-400',
+        ]"
+      >
+        ¥{{ fmt.format(totalNet) }}
       </p>
       <p class="mt-1 text-xs text-muted-foreground">
         実効税率: {{ effectiveRate }}%
@@ -29,13 +40,18 @@ const effectiveRate = computed(
         <div>
           <p class="text-[10px] text-muted-foreground">個人手取り</p>
           <p class="font-mono text-sm text-cyan-300">
-            {{ fmt.format(personalNet) }}円
+            ¥{{ fmt.format(personalNet) }}
           </p>
         </div>
         <div>
           <p class="text-[10px] text-muted-foreground">法人内部留保</p>
-          <p class="font-mono text-sm text-cyan-300">
-            {{ fmt.format(corporateRetained) }}円
+          <p
+            :class="[
+              'font-mono text-sm',
+              corporateRetained < 0 ? 'text-red-400' : 'text-cyan-300',
+            ]"
+          >
+            ¥{{ fmt.format(corporateRetained) }}
           </p>
         </div>
       </div>

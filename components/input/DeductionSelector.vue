@@ -5,6 +5,7 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Switch } from '~/components/ui/switch'
 import { Separator } from '~/components/ui/separator'
+import { getBasicDeduction } from '~/utils/deduction-calculator'
 
 const engine = inject<ReturnType<typeof useTaxEngine>>('taxEngine')!
 
@@ -16,23 +17,11 @@ const autoDeductions = computed(() => {
   return [
     { label: '給与所得控除', amount: r.annualCompensation - r.employmentIncome },
     { label: '社会保険料控除', amount: r.socialInsurance.employeeAnnual },
-    { label: '基礎控除 (所得税)', amount: getBasicDeduction(r.employmentIncome) },
+    { label: '基礎控除 (所得税)', amount: getBasicDeduction(r.employmentIncome, 'incomeTax') },
   ]
 })
 
 const autoTotal = computed(() => autoDeductions.value.reduce((s, d) => s + d.amount, 0))
-
-function getBasicDeduction(employmentIncome: number): number {
-  if (employmentIncome <= 1_320_000) return 950_000
-  if (employmentIncome <= 3_360_000) return 880_000
-  if (employmentIncome <= 4_890_000) return 680_000
-  if (employmentIncome <= 6_550_000) return 630_000
-  if (employmentIncome <= 23_500_000) return 580_000
-  if (employmentIncome <= 24_000_000) return 480_000
-  if (employmentIncome <= 24_500_000) return 320_000
-  if (employmentIncome <= 25_000_000) return 160_000
-  return 0
-}
 
 // --- Layer 2: Main deduction controls ---
 // These directly mutate deductionSettings while preserving other fields
