@@ -244,6 +244,16 @@ const activeDeductionCount = computed(() => {
         <CollapsibleTrigger class="flex w-full items-center justify-between rounded-lg border border-border px-4 py-2.5 text-sm hover:bg-muted/50">
           <div class="flex items-center gap-3">
             <span class="font-medium">控除設定</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <button type="button" class="inline-flex size-4 items-center justify-center rounded-full bg-muted text-[10px] text-muted-foreground" @click.stop>?</button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p class="max-w-[240px] text-xs">各種控除を設定して節税効果をシミュレーションできます。自動控除以外はスイッチで ON/OFF を切り替えてください</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <span class="text-xs text-muted-foreground">
               自動控除 ¥{{ fmt.format(autoTotal) }}
               <template v-if="activeDeductionCount > 0">
@@ -257,7 +267,19 @@ const activeDeductionCount = computed(() => {
           <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 rounded-lg border border-border/50 p-4 md:grid-cols-3">
             <!-- 自動控除 -->
             <div class="space-y-1.5">
-              <p class="text-xs font-medium">自動控除</p>
+              <div class="flex items-center gap-1.5">
+                <p class="text-xs font-medium">自動控除</p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <button type="button" class="inline-flex size-3.5 items-center justify-center rounded-full bg-muted text-[9px] text-muted-foreground">?</button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p class="max-w-[240px] text-xs">給与・社保・基礎控除は報酬額から自動計算されます。手動変更は不要です</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <div
                 v-for="item in autoDeductions"
                 :key="item.label"
@@ -270,7 +292,19 @@ const activeDeductionCount = computed(() => {
 
             <!-- 所得控除 -->
             <div class="space-y-2.5">
-              <p class="text-xs font-medium">所得控除</p>
+              <div class="flex items-center gap-1.5">
+                <p class="text-xs font-medium">所得控除</p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <button type="button" class="inline-flex size-3.5 items-center justify-center rounded-full bg-muted text-[9px] text-muted-foreground">?</button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p class="max-w-[240px] text-xs">個人の所得税・住民税を減らす控除です。ON にすると課税所得が下がり手取りが増えます</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <div class="flex items-center justify-between">
                 <Label class="text-xs">配偶者控除</Label>
                 <Switch v-model="hasSpouse" />
@@ -281,7 +315,7 @@ const activeDeductionCount = computed(() => {
                   <Switch v-model="hasSmallBusiness" />
                 </div>
                 <div v-show="hasSmallBusiness" class="flex items-center gap-1 pl-3">
-                  <Input v-model.number="smallBusinessInMan" type="number" :min="0" :max="84" class="w-16 text-right text-xs font-mono" />
+                  <Input v-model.number="smallBusinessInMan" type="number" :min="0" :max="84" class="w-24 text-right text-xs font-mono" />
                   <span class="text-[10px] text-muted-foreground">万/年 (上限84万)</span>
                 </div>
               </div>
@@ -291,7 +325,7 @@ const activeDeductionCount = computed(() => {
                   <Switch v-model="hasIdeco" />
                 </div>
                 <div v-show="hasIdeco" class="flex items-center gap-1 pl-3">
-                  <Input v-model.number="idecoInMan" type="number" :min="0" :max="27.6" :step="0.1" class="w-16 text-right text-xs font-mono" />
+                  <Input v-model.number="idecoInMan" type="number" :min="0" :max="27.6" :step="0.1" class="w-24 text-right text-xs font-mono" />
                   <span class="text-[10px] text-muted-foreground">万/年 (上限27.6万)</span>
                 </div>
               </div>
@@ -299,14 +333,26 @@ const activeDeductionCount = computed(() => {
 
             <!-- 法人損金・その他 -->
             <div class="space-y-2.5">
-              <p class="text-xs font-medium">法人損金・その他</p>
+              <div class="flex items-center gap-1.5">
+                <p class="text-xs font-medium">法人損金・その他</p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <button type="button" class="inline-flex size-3.5 items-center justify-center rounded-full bg-muted text-[9px] text-muted-foreground">?</button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p class="max-w-[240px] text-xs">法人の利益を圧縮して法人税を減らす制度や、その他の個人控除です</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <div class="space-y-1">
                 <div class="flex items-center justify-between">
                   <Label class="text-xs">経営セーフティ共済</Label>
                   <Switch v-model="hasSafety" />
                 </div>
                 <div v-show="hasSafety" class="flex items-center gap-1 pl-3">
-                  <Input v-model.number="safetyInMan" type="number" :min="0" :max="240" class="w-16 text-right text-xs font-mono" />
+                  <Input v-model.number="safetyInMan" type="number" :min="0" :max="240" class="w-24 text-right text-xs font-mono" />
                   <span class="text-[10px] text-muted-foreground">万/年 (上限240万)</span>
                 </div>
               </div>
@@ -316,7 +362,7 @@ const activeDeductionCount = computed(() => {
                   <Switch v-model="hasLifeInsurance" />
                 </div>
                 <div v-show="hasLifeInsurance" class="flex items-center gap-1 pl-3">
-                  <Input v-model.number="lifeInsuranceInMan" type="number" :min="0" class="w-16 text-right text-xs font-mono" />
+                  <Input v-model.number="lifeInsuranceInMan" type="number" :min="0" class="w-24 text-right text-xs font-mono" />
                   <span class="text-[10px] text-muted-foreground">万/年</span>
                 </div>
               </div>
@@ -326,7 +372,7 @@ const activeDeductionCount = computed(() => {
                   <Switch v-model="hasMedical" />
                 </div>
                 <div v-show="hasMedical" class="flex items-center gap-1 pl-3">
-                  <Input v-model.number="medicalInMan" type="number" :min="0" class="w-16 text-right text-xs font-mono" />
+                  <Input v-model.number="medicalInMan" type="number" :min="0" class="w-24 text-right text-xs font-mono" />
                   <span class="text-[10px] text-muted-foreground">万/年 (10万超が控除)</span>
                 </div>
               </div>

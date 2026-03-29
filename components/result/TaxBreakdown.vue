@@ -2,6 +2,12 @@
 import { computed, inject } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip'
 import { calculateCorporateTaxes } from '~/utils/corporate-tax-calculator'
 
 const engine = inject<ReturnType<typeof useTaxEngine>>('taxEngine')!
@@ -44,7 +50,19 @@ const corporateTotal = computed(
 <template>
   <Card>
     <CardHeader class="pb-3">
-      <CardTitle class="text-sm font-medium">税金内訳</CardTitle>
+      <div class="flex items-center gap-1.5">
+        <CardTitle class="text-sm font-medium">税金内訳</CardTitle>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <button type="button" class="inline-flex size-4 items-center justify-center rounded-full bg-muted text-[10px] text-muted-foreground">?</button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p class="max-w-[240px] text-xs">個人と法人それぞれの税金・社保の詳細な内訳です</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </CardHeader>
     <CardContent>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

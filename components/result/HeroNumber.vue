@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 import { Card, CardContent } from '~/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip'
 
 const engine = inject<ReturnType<typeof useTaxEngine>>('taxEngine')!
 
@@ -23,7 +29,19 @@ const isDeficit = computed(() => totalNet.value < 0)
     ]"
   >
     <CardContent class="p-6">
-      <p class="text-xs text-muted-foreground">トータル手残り</p>
+      <div class="flex items-center gap-1.5">
+        <p class="text-xs text-muted-foreground">トータル手残り</p>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <button type="button" class="inline-flex size-3.5 items-center justify-center rounded-full bg-muted text-[9px] text-muted-foreground">?</button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p class="max-w-[240px] text-xs">個人の手取り＋法人内部留保の合計額。税・社保を差し引いた実質的な手残りです</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
       <p
         :class="[
           'mt-1 text-3xl font-bold tracking-tight',

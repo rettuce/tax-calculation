@@ -12,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip'
 
 const engine = inject<ReturnType<typeof useTaxEngine>>('taxEngine')!
 const fmt = new Intl.NumberFormat('ja-JP')
@@ -81,7 +87,19 @@ const segments = computed(() => {
 <template>
   <Card>
     <CardHeader class="pb-3">
-      <CardTitle class="text-sm font-medium">報酬配分</CardTitle>
+      <div class="flex items-center gap-1.5">
+        <CardTitle class="text-sm font-medium">報酬配分</CardTitle>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <button type="button" class="inline-flex size-4 items-center justify-center rounded-full bg-muted text-[10px] text-muted-foreground">?</button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p class="max-w-[240px] text-xs">月額給与と賞与の配分を調整します。配分バランスで税額・社保が変わります</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </CardHeader>
     <CardContent class="space-y-5">
       <!-- 月額定期同額給与 -->

@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip'
 
 const engine = inject<ReturnType<typeof useTaxEngine>>('taxEngine')!
 
@@ -35,7 +41,19 @@ const segments = computed(() => {
 <template>
   <Card>
     <CardHeader class="pb-3">
-      <CardTitle class="text-sm font-medium">利益配分フロー</CardTitle>
+      <div class="flex items-center gap-1.5">
+        <CardTitle class="text-sm font-medium">利益配分フロー</CardTitle>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <button type="button" class="inline-flex size-4 items-center justify-center rounded-full bg-muted text-[10px] text-muted-foreground">?</button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p class="max-w-[240px] text-xs">利益が個人手取り・税金・社保・法人留保にどう分かれるかを可視化しています</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </CardHeader>
     <CardContent class="space-y-3">
       <!-- Stacked bar -->

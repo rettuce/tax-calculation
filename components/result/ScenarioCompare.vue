@@ -3,6 +3,12 @@ import { computed, inject, ref, nextTick } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Separator } from '~/components/ui/separator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip'
 import type { Scenario } from '~/composables/useScenario'
 
 const engine = inject<ReturnType<typeof useTaxEngine>>('taxEngine')!
@@ -84,9 +90,19 @@ function confirmDeleteAll() {
   <Card>
     <CardHeader class="pb-3">
       <div class="flex items-center justify-between">
-        <CardTitle class="text-sm font-medium">
-          シナリオ比較
-        </CardTitle>
+        <div class="flex items-center gap-1.5">
+          <CardTitle class="text-sm font-medium">シナリオ比較</CardTitle>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <button type="button" class="inline-flex size-4 items-center justify-center rounded-full bg-muted text-[10px] text-muted-foreground">?</button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p class="max-w-[240px] text-xs">現在の設定を保存して複数パターンを比較できます。「適用」で保存時の設定に戻せます</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <Button size="sm" variant="outline" class="h-7 text-xs" @click="handleSave">
           現在の設定を保存
         </Button>
