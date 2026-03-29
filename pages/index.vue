@@ -11,28 +11,32 @@ provide('scenario', scenario)
   <div class="min-h-screen bg-background">
     <header class="border-b border-border px-4 py-3">
       <div class="container mx-auto flex items-center justify-between">
-        <h1 class="text-lg font-bold">役員報酬最適化シミュレーター</h1>
+        <h1 class="text-lg font-bold">tedori</h1>
         <span class="text-xs text-muted-foreground">適用税率: 令和7年度</span>
       </div>
     </header>
 
-    <main class="container mx-auto px-4 py-6">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Left: Input panel -->
-        <div class="space-y-4">
-          <InputProfitInput />
-          <InputProfileSettings />
-          <InputOptimizerGoal />
-          <InputCompensationSlider />
-          <InputDeductionSelector />
-        </div>
+    <main class="container mx-auto px-4 py-6 space-y-4">
+      <!-- Row 1: 基本設定 -->
+      <InputBasicSettings />
 
-        <!-- Right: Results panel -->
+      <!-- Row 2: サマリー＋警告（常に全幅で見える） -->
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_2fr]">
+        <ResultHeroNumber />
+        <ResultWarningDisplay />
+      </div>
+
+      <!-- Row 3: 操作＋結果 3カラム -->
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div class="space-y-4">
-          <ResultHeroNumber class="sticky top-4 z-10" />
-          <ResultWarningDisplay />
+          <InputCompensationSlider />
+          <InputOptimizerGoal />
+        </div>
+        <div class="space-y-4">
           <ResultAllocationFlow />
           <ResultTaxBreakdown />
+        </div>
+        <div class="space-y-4">
           <ResultBracketBarCompact title="所得税ブラケット" type="income" />
           <ResultBracketBarCompact title="法人税ブラケット" type="corporate" />
           <ResultScenarioCompare />

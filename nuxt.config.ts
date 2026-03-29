@@ -19,15 +19,16 @@ export default defineNuxtConfig({
     },
   },
   app: {
+    baseURL: process.env.NUXT_APP_BASE_URL || '/',
     head: {
-      title: '役員報酬最適化シミュレーター',
+      title: 'tedori',
       meta: [
-        { name: 'description', content: '一人法人の役員報酬と法人利益の配分を視覚的にシミュレーション' },
+        { name: 'description', content: 'ひとり法人の役員報酬と法人利益の最適な配分をシミュレーション' },
       ],
     },
   },
   nitro: {
-    preset: 'cloudflare-pages',
+    preset: 'github-pages',
   },
   vite: {
     server: {
