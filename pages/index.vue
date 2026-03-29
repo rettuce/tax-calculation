@@ -44,10 +44,14 @@ provide('scenario', scenario)
       </div>
     </main>
 
-    <footer class="border-t border-border px-4 py-3 text-center">
-      <p class="text-xs text-muted-foreground">
-        本シミュレーションは概算です。重要な判断の際は税理士にご相談ください。
-      </p>
+    <footer class="border-t border-border px-4 py-3">
+      <div class="container mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+        <p>本シミュレーションは概算です。重要な判断の際は税理士にご相談ください。</p>
+        <div class="flex items-center gap-3">
+          <span>by <a href="https://github.com/rettuce" class="hover:text-foreground">rettuce</a></span>
+          <a href="https://github.com/rettuce/tax-calculation" class="hover:text-foreground">GitHub</a>
+        </div>
+      </div>
     </footer>
   </div>
 </template>
