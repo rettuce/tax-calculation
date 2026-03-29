@@ -336,10 +336,9 @@ describe('統合テスト: optimize', () => {
   }, OPTIMIZATION_TIMEOUT)
 
   test('最適化結果の資金保存則', () => {
-    const goals: ('maxNetIncome' | 'maxTotalRetained' | 'minTaxRate' | 'minSocialInsurance')[] = [
+    const goals: ('maxNetIncome' | 'maxTotalRetained' | 'minSocialInsurance')[] = [
       'maxNetIncome',
       'maxTotalRetained',
-      'minTaxRate',
       'minSocialInsurance',
     ]
 

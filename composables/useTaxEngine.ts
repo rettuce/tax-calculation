@@ -41,6 +41,7 @@ export function useTaxEngine() {
   const age = ref(stored?.age ?? 35)
   const prefecture = ref(stored?.prefecture ?? 'tokyo')
   const optimizationGoal = ref<OptimizationGoal>('maxTotalRetained')
+  const minMonthlyCompensation = ref(0)
 
   const deductionSettings = ref<DeductionSettings>(
     stored?.deductions ?? { hasYoungDependent: false },
@@ -195,6 +196,7 @@ export function useTaxEngine() {
       prefecture: prefecture.value,
       goal: optimizationGoal.value,
       deductions: deductionSettings.value,
+      minMonthlyCompensation: minMonthlyCompensation.value,
     })
 
     // optimizer の結果を入力 ref に反映
@@ -218,6 +220,7 @@ export function useTaxEngine() {
     age,
     prefecture,
     optimizationGoal,
+    minMonthlyCompensation,
     deductionSettings,
     // Computed
     annualCompensation,

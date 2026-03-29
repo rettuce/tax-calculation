@@ -211,20 +211,6 @@ describe('optimize', () => {
     expect(result.reason).toContain('総合手取り')
   }, OPTIMIZATION_TIMEOUT)
 
-  test('minTaxRate: 実効税率が最小となる結果を返す', () => {
-    const result = optimize({
-      totalProfit: 20_000_000,
-      age: 35,
-      prefecture: '東京都',
-      goal: 'minTaxRate',
-      deductions: baseDeductions,
-    })
-
-    expect(result.effectiveTaxRate).toBeGreaterThan(0)
-    expect(result.effectiveTaxRate).toBeLessThan(1)
-    expect(result.reason).toContain('実効税率')
-  }, OPTIMIZATION_TIMEOUT)
-
   test('minSocialInsurance: 社会保険料が最小となる結果を返す', () => {
     const result = optimize({
       totalProfit: 20_000_000,
@@ -242,7 +228,6 @@ describe('optimize', () => {
     const goals: OptimizationGoal[] = [
       'maxNetIncome',
       'maxTotalRetained',
-      'minTaxRate',
       'minSocialInsurance',
     ]
 

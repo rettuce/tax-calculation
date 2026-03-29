@@ -37,6 +37,8 @@ export interface DeductionSettings {
   ideco?: number
   /** 医療費（支払総額） */
   medicalExpense?: number
+  /** 経営セーフティ共済 掛金（法人損金、年額上限240万円） */
+  safetyMutualAid?: number
   /** その他控除（所得税用） */
   otherDeductionIncomeTax?: number
   /** その他控除（住民税用） */
@@ -99,7 +101,6 @@ export interface CalculationResult {
 export type OptimizationGoal =
   | 'maxNetIncome'
   | 'maxTotalRetained'
-  | 'minTaxRate'
   | 'minSocialInsurance'
 
 export interface OptimizationInput {
@@ -108,6 +109,8 @@ export interface OptimizationInput {
   prefecture: string
   goal: OptimizationGoal
   deductions: DeductionSettings
+  /** 月額定期同額給与の下限（円） */
+  minMonthlyCompensation?: number
 }
 
 export interface OptimizationResult extends CalculationResult {
@@ -255,9 +258,10 @@ export function calculateAll(input: CalculationInput): CalculationResult {
   const personalNetIncome =
     annualCompensation - si.employeeAnnual - incomeTax - residentTax
 
-  // Step 9: 法人所得
+  // Step 9: 法人所得（セーフティ共済は法人損金）
+  const safetyMutualAid = deductions.safetyMutualAid ?? 0
   const corporateIncome =
-    totalProfit - annualCompensation - si.employerAnnual
+    totalProfit - annualCompensation - si.employerAnnual - safetyMutualAid
 
   // Step 10: 法人税等
   const corpTax = calculateCorporateTaxes(corporateIncome, DEFAULT_PROFILE)
@@ -316,8 +320,6 @@ function goalValue(result: CalculationResult, goal: OptimizationGoal): number {
       return result.personalNetIncome
     case 'maxTotalRetained':
       return result.totalNetIncome
-    case 'minTaxRate':
-      return -result.effectiveTaxRate
     case 'minSocialInsurance':
       return -result.socialInsurance.totalAnnual
   }
@@ -351,6 +353,7 @@ interface SearchCandidate {
  */
 export function optimize(input: OptimizationInput): OptimizationResult {
   const { totalProfit, age, prefecture, goal, deductions } = input
+  const minMonthly = input.minMonthlyCompensation ?? 0
 
   const maxMonthly = Math.min(Math.floor(totalProfit / 12), 2_000_000)
   const bonusCounts: (1 | 2 | 3)[] = [1, 2, 3]
@@ -358,7 +361,7 @@ export function optimize(input: OptimizationInput): OptimizationResult {
   // Phase 1: 粗探索
   const candidates: SearchCandidate[] = []
 
-  for (let monthly = 0; monthly <= maxMonthly; monthly += 10_000) {
+  for (let monthly = minMonthly; monthly <= maxMonthly; monthly += 10_000) {
     for (const bonusCount of bonusCounts) {
       const maxBonus = totalProfit - monthly * 12
       for (let bonus = 0; bonus <= maxBonus; bonus += 100_000) {
@@ -393,7 +396,7 @@ export function optimize(input: OptimizationInput): OptimizationResult {
   let best: SearchCandidate | null = null
 
   for (const candidate of top5) {
-    const monthlyLow = Math.max(0, candidate.monthly - 100_000)
+    const monthlyLow = Math.max(minMonthly, candidate.monthly - 100_000)
     const monthlyHigh = Math.min(maxMonthly, candidate.monthly + 100_000)
     const bonusLow = Math.max(0, candidate.bonus - 100_000)
     const bonusHigh = candidate.bonus + 100_000
@@ -430,7 +433,7 @@ export function optimize(input: OptimizationInput): OptimizationResult {
   if (!best) {
     const fallbackResult = calculateAll({
       totalProfit,
-      monthlyCompensation: 0,
+      monthlyCompensation: minMonthly,
       bonusAmount: 0,
       bonusCount: 1,
       age,
@@ -439,7 +442,9 @@ export function optimize(input: OptimizationInput): OptimizationResult {
     })
     return {
       ...fallbackResult,
-      reason: '利益が小さいため、役員報酬0が最適です',
+      reason: minMonthly > 0
+        ? `月額下限${Math.round(minMonthly / 10_000)}万円の制約内で最適化しました`
+        : '利益が小さいため、役員報酬0が最適です',
     }
   }
 
@@ -477,8 +482,6 @@ function generateReason(
       return `月額${monthlyMan}万円で所得税${bracketPercent}ブラケット内に収まり、個人手取りが最大化されます`
     case 'maxTotalRetained':
       return `月額${monthlyMan}万円で所得税${bracketPercent}ブラケットと法人税の軽減税率のバランスにより、総合手取りが最大化されます`
-    case 'minTaxRate':
-      return `月額${monthlyMan}万円で実効税率${(candidate.result.effectiveTaxRate * 100).toFixed(1)}%が最小となります`
     case 'minSocialInsurance':
       return `月額${monthlyMan}万円で社会保険料が最小化されます（標準報酬月額の等級を最適化）`
   }

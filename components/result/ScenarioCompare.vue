@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, ref, nextTick } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Separator } from '~/components/ui/separator'
@@ -8,6 +8,23 @@ import type { Scenario } from '~/composables/useScenario'
 const engine = inject<ReturnType<typeof useTaxEngine>>('taxEngine')!
 const scenario = inject<ReturnType<typeof useScenario>>('scenario')!
 
+const editingId = ref<string | null>(null)
+const editingName = ref('')
+const editInput = ref<HTMLInputElement | null>(null)
+
+function startEdit(s: Scenario) {
+  editingId.value = s.id
+  editingName.value = s.name
+  nextTick(() => editInput.value?.select())
+}
+
+function commitEdit() {
+  if (editingId.value && editingName.value.trim()) {
+    scenario.renameScenario(editingId.value, editingName.value.trim())
+  }
+  editingId.value = null
+}
+
 const fmt = new Intl.NumberFormat('ja-JP')
 
 function formatMan(yen: number): string {
@@ -15,9 +32,14 @@ function formatMan(yen: number): string {
 }
 
 function autoName(): string {
+  const profit = formatMan(engine.totalProfit.value)
   const monthly = formatMan(engine.monthlyCompensation.value)
+  const bonus = formatMan(engine.bonusAmount.value)
   const net = formatMan(engine.result.value.personalNetIncome)
-  return `月額${monthly}_手取り${net}`
+  const parts = [`利益${profit}`, `月額${monthly}`]
+  if (engine.bonusAmount.value > 0) parts.push(`賞与${bonus}`)
+  parts.push(`手取${net}`)
+  return parts.join('_')
 }
 
 function handleSave() {
@@ -85,8 +107,29 @@ function confirmDeleteAll() {
       >
         <div class="flex items-start justify-between gap-2">
           <div class="min-w-0 flex-1">
-            <p class="truncate text-xs font-medium">{{ s.name }}</p>
+            <input
+              v-if="editingId === s.id"
+              ref="editInput"
+              v-model="editingName"
+              class="w-full rounded border border-border bg-transparent px-1 text-xs font-medium outline-none focus:border-primary"
+              @blur="commitEdit"
+              @keydown.enter="commitEdit"
+              @keydown.escape="editingId = null"
+            >
+            <p
+              v-else
+              class="cursor-pointer truncate text-xs font-medium hover:text-primary"
+              @click="startEdit(s)"
+            >
+              {{ s.name }}
+            </p>
             <div class="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px]">
+              <div class="flex justify-between">
+                <span class="text-muted-foreground">利益総額</span>
+                <span class="font-mono">
+                  {{ fmt.format(s.params.totalProfit) }}
+                </span>
+              </div>
               <div class="flex justify-between">
                 <span class="text-muted-foreground">手残り</span>
                 <span class="font-mono text-cyan-400">

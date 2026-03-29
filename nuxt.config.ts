@@ -29,4 +29,13 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'cloudflare-pages',
   },
+  vite: {
+    server: {
+      hmr: {
+        host: '0.0.0.0',
+        protocol: 'ws',
+      },
+      allowedHosts: true,
+    },
+  },
 })

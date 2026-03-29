@@ -70,6 +70,13 @@ export function useScenario() {
     return scenario
   }
 
+  function renameScenario(id: string, name: string) {
+    scenarios.value = scenarios.value.map((s) =>
+      s.id === id ? { ...s, name: name.slice(0, 100) } : s,
+    )
+    persist()
+  }
+
   function deleteScenario(id: string) {
     scenarios.value = scenarios.value.filter((s) => s.id !== id)
     persist()
@@ -98,6 +105,7 @@ export function useScenario() {
   return {
     scenarios,
     saveScenario,
+    renameScenario,
     deleteScenario,
     deleteAllScenarios,
     exportScenarios,

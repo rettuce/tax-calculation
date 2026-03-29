@@ -75,6 +75,26 @@ const idecoInMan = computed({
   },
 })
 
+const hasSafety = computed({
+  get: () => (engine.deductionSettings.value.safetyMutualAid ?? 0) > 0,
+  set: (v: boolean) => {
+    engine.deductionSettings.value = {
+      ...engine.deductionSettings.value,
+      safetyMutualAid: v ? 2_400_000 : 0,
+    }
+  },
+})
+
+const safetyInMan = computed({
+  get: () => Math.round((engine.deductionSettings.value.safetyMutualAid ?? 0) / 10_000),
+  set: (v: number) => {
+    engine.deductionSettings.value = {
+      ...engine.deductionSettings.value,
+      safetyMutualAid: Math.min(Math.max(0, v), 240) * 10_000,
+    }
+  },
+})
+
 // --- Layer 3: Other deductions ---
 
 const hasLifeInsurance = computed({
@@ -196,6 +216,24 @@ const showOther = ref(false)
                 class="w-20 text-right text-xs font-mono"
               />
               <span class="text-xs text-muted-foreground">万円/年 (上限27.6万)</span>
+            </div>
+          </div>
+
+          <!-- 経営セーフティ共済 -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <Label class="text-xs">経営セーフティ共済</Label>
+              <Switch v-model="hasSafety" />
+            </div>
+            <div v-show="hasSafety" class="flex items-center gap-2 pl-3">
+              <Input
+                v-model.number="safetyInMan"
+                type="number"
+                :min="0"
+                :max="240"
+                class="w-20 text-right text-xs font-mono"
+              />
+              <span class="text-xs text-muted-foreground">万円/年 (上限240万・法人損金)</span>
             </div>
           </div>
         </div>
